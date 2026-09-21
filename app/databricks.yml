@@ -1,0 +1,61 @@
+bundle:
+  name: fhlb-command-center
+
+sync:
+  include:
+    - .build
+
+artifacts:
+  default:
+    build: apx build
+
+variables:
+  warehouse_id:
+    description: SQL warehouse backing Lakehouse KPI queries
+    default: "688f49c732cf9083"
+  gateway_endpoint:
+    description: AI Gateway governed LLM serving endpoint
+    default: "fhlb-governed-llm"
+  early_warning_endpoint:
+    description: Member Early-Warning (credit risk PD) Model Serving endpoint
+    default: "fhlb-member-credit-risk"
+  lakebase_instance:
+    description: Lakebase (Postgres) instance name
+    default: "fhlb-lakebase"
+  lakebase_database:
+    description: Lakebase database name
+    default: "fhlb_app"
+
+resources:
+  apps:
+    fhlb-command-center-app:
+      name: "fhlb-command-center"
+      description: "FHLB Des Moines Executive Command Center"
+      source_code_path: ./.build
+      resources:
+        - name: sql-warehouse
+          description: Lakehouse KPI queries via Statement Execution API
+          sql_warehouse:
+            id: ${var.warehouse_id}
+            permission: CAN_USE
+        - name: serving-endpoint
+          description: Governed narratives and assistant via AI Gateway
+          serving_endpoint:
+            name: ${var.gateway_endpoint}
+            permission: CAN_QUERY
+        - name: early-warning-endpoint
+          description: Member Early-Warning credit-risk PD model on Model Serving
+          serving_endpoint:
+            name: ${var.early_warning_endpoint}
+            permission: CAN_QUERY
+        - name: database
+          description: App OLTP state (annotations, watchlist, exam packs, audit)
+          database:
+            instance_name: ${var.lakebase_instance}
+            database_name: ${var.lakebase_database}
+            permission: CAN_CONNECT_AND_CREATE
+
+targets:
+  dev:
+    mode: development
+    default: true

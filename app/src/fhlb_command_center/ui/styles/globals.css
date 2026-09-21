@@ -1,0 +1,283 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.17 0.028 255);
+  --foreground: oklch(0.97 0.006 250);
+  --card: oklch(0.215 0.03 256);
+  --card-foreground: oklch(0.97 0.006 250);
+  --popover: oklch(0.205 0.03 256);
+  --popover-foreground: oklch(0.97 0.006 250);
+  --primary: oklch(0.72 0.14 233);
+  --primary-foreground: oklch(0.16 0.03 255);
+  --secondary: oklch(0.27 0.03 256);
+  --secondary-foreground: oklch(0.97 0.006 250);
+  --muted: oklch(0.27 0.028 256);
+  --muted-foreground: oklch(0.7 0.03 250);
+  --accent: oklch(0.3 0.05 245);
+  --accent-foreground: oklch(0.97 0.006 250);
+  --destructive: oklch(0.62 0.2 20);
+  --destructive-foreground: oklch(0.97 0.02 20);
+  --border: oklch(0.32 0.03 256 / 55%);
+  --input: oklch(0.32 0.03 256 / 60%);
+  --ring: oklch(0.72 0.14 233);
+  --chart-1: oklch(0.72 0.14 233);
+  --chart-2: oklch(0.75 0.15 165);
+  --chart-3: oklch(0.8 0.16 85);
+  --chart-4: oklch(0.68 0.19 300);
+  --chart-5: oklch(0.66 0.22 20);
+  --sidebar: oklch(0.185 0.03 257);
+  --sidebar-foreground: oklch(0.9 0.01 250);
+  --sidebar-primary: oklch(0.72 0.14 233);
+  --sidebar-primary-foreground: oklch(0.16 0.03 255);
+  --sidebar-accent: oklch(0.27 0.03 256);
+  --sidebar-accent-foreground: oklch(0.97 0.006 250);
+  --sidebar-border: oklch(0.3 0.03 256 / 50%);
+  --sidebar-ring: oklch(0.72 0.14 233);
+  /* per-persona accent, overridden on the shell wrapper */
+  --persona: oklch(0.72 0.14 233);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
+  }
+}
+
+/* --- FHLB Executive Command Center theme --- */
+
+.exec-bg {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(60rem 60rem at 85% -10%, color-mix(in oklch, var(--persona) 22%, transparent), transparent 60%),
+    radial-gradient(50rem 50rem at -10% 110%, color-mix(in oklch, var(--persona) 14%, transparent), transparent 55%),
+    linear-gradient(to bottom, color-mix(in oklch, var(--background) 100%, transparent), var(--background));
+}
+
+.exec-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in oklch, var(--foreground) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklch, var(--foreground) 5%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at 50% 0%, black, transparent 75%);
+  pointer-events: none;
+}
+
+.glass {
+  background: color-mix(in oklch, var(--card) 82%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in oklch, var(--foreground) 8%, transparent);
+  box-shadow: 0 1px 0 0 color-mix(in oklch, var(--foreground) 6%, transparent) inset,
+    0 20px 40px -24px rgb(0 0 0 / 0.6);
+}
+
+.glass-persona {
+  background: color-mix(in oklch, var(--card) 82%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in oklch, var(--persona) 26%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--persona) 8%, transparent) inset,
+    0 24px 48px -28px color-mix(in oklch, var(--persona) 40%, black);
+}
+
+.persona-text {
+  color: var(--persona);
+}
+.persona-bg-soft {
+  background: color-mix(in oklch, var(--persona) 16%, transparent);
+}
+.persona-ring {
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--persona) 45%, transparent),
+    0 0 24px -6px color-mix(in oklch, var(--persona) 55%, transparent);
+}
+.gradient-text {
+  background: linear-gradient(92deg, var(--foreground), var(--persona));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Persona-tinted hero header wash (translucent so the blur shows through). */
+.exec-header {
+  background:
+    linear-gradient(180deg, color-mix(in oklch, var(--persona) 10%, transparent), transparent 72%),
+    radial-gradient(38rem 18rem at 10% -70%, color-mix(in oklch, var(--persona) 24%, transparent), transparent 60%),
+    color-mix(in oklch, var(--background) 60%, transparent);
+}
+
+/* Persona gradient accent line along the bottom edge of the header. */
+.header-accent {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklch, var(--persona) 65%, transparent) 12%,
+    color-mix(in oklch, var(--persona) 65%, transparent) 60%,
+    transparent 92%
+  );
+}
+
+.tnum { font-variant-numeric: tabular-nums; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+.live-dot { animation: pulse-dot 1.8s ease-in-out infinite; }
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+.blink::after {
+  content: "▋";
+  margin-left: 1px;
+  animation: pulse-dot 1s steps(2) infinite;
+  color: var(--persona);
+}
+
+/* --- Architecture diagram --- */
+
+.arch-line {
+  position: relative;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklch, var(--persona) 45%, transparent) 18%,
+    color-mix(in oklch, var(--persona) 45%, transparent) 82%,
+    transparent
+  );
+}
+
+@keyframes arch-packet {
+  0% { top: -8px; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+.arch-packet {
+  position: absolute;
+  left: 50%;
+  height: 8px;
+  width: 8px;
+  margin-left: -4px;
+  border-radius: 9999px;
+  background: var(--persona);
+  box-shadow: 0 0 10px 2px color-mix(in oklch, var(--persona) 70%, transparent);
+  animation: arch-packet 2.4s linear infinite;
+}
+
+@keyframes arch-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.arch-float { animation: arch-float 4s ease-in-out infinite; }
+
+@keyframes arch-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--persona) 30%, transparent),
+      0 0 40px -12px color-mix(in oklch, var(--persona) 60%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--persona) 55%, transparent),
+      0 0 72px -8px color-mix(in oklch, var(--persona) 85%, transparent);
+  }
+}
+.arch-glow { animation: arch-glow 3.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .arch-packet, .arch-float, .arch-glow, .animate-fade-up, .live-dot { animation: none; }
+}

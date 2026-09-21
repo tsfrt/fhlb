@@ -1,0 +1,10 @@
+bundle:
+  name: fhlb-data-pipeline
+
+include:
+  - resources/*.yml
+
+targets:
+  dev:
+    mode: development
+    default: true

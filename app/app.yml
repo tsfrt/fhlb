@@ -1,0 +1,8 @@
+command: ["uvicorn", "fhlb_command_center.backend.app:app", "--workers", "2"]
+env:
+  - name: FHLB_COMMAND_CENTER_WAREHOUSE_ID
+    valueFrom: sql-warehouse
+  - name: FHLB_COMMAND_CENTER_GATEWAY_ENDPOINT
+    valueFrom: serving-endpoint
+  - name: FHLB_COMMAND_CENTER_EARLY_WARNING_ENDPOINT
+    valueFrom: early-warning-endpoint

@@ -1,0 +1,220 @@
+import { useMemo, useState, type ReactNode } from "react";
+import { BarChart3, Table2, Image as ImageIcon, Database, ChevronDown } from "lucide-react";
+import {
+  analyzeResult,
+  toChartData,
+  measureFormat,
+  asNumber,
+  type Row,
+} from "@/lib/genie-viz";
+import { fmtNum, fmtInt, fmtPct, titleCase } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { RowsTable } from "./rows-table";
+import { BarChartView, LineChartView, AreaChartView, DonutChartView } from "./charts";
+
+type View = "chart" | "table" | "genie";
+
+function fmtCurrencyAuto(n: number): string {
+  const a = Math.abs(n);
+  if (a >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
+  if (a >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
+  if (a >= 1e3) return `$${(n / 1e3).toFixed(1)}K`;
+  return `$${fmtNum(n, 0)}`;
+}
+
+function formatMeasure(col: string, v: unknown): string {
+  const n = asNumber(v);
+  if (n === null) return v == null ? "-" : String(v);
+  const kind = measureFormat(col);
+  if (kind === "currency") return fmtCurrencyAuto(n);
+  if (kind === "percent") return fmtPct(n, 1);
+  return Number.isInteger(n) ? fmtInt(n) : fmtNum(n, 1);
+}
+
+function Kpi({ column, rows }: { column: string; rows: Row[] }) {
+  const row = rows[0] ?? {};
+  const context = Object.keys(row)
+    .filter((k) => k !== column)
+    .map((k) => `${titleCase(k)}: ${String(row[k])}`)
+    .slice(0, 2)
+    .join(" · ");
+  return (
+    <div className="glass rounded-xl p-4">
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        {titleCase(column)}
+      </div>
+      <div className="persona-text tnum mt-1 text-3xl font-semibold">
+        {formatMeasure(column, row[column])}
+      </div>
+      {context && <div className="mt-1 text-[11px] text-muted-foreground">{context}</div>}
+    </div>
+  );
+}
+
+function ToggleBtn({
+  active,
+  onClick,
+  children,
+  title,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+  title: string;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      className={cn(
+        "grid size-7 place-items-center rounded-md transition",
+        active ? "persona-bg-soft persona-text" : "text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function GenieResult({
+  columns,
+  rows,
+  sql,
+  vizUrl,
+  vizTitle,
+}: {
+  columns: string[];
+  rows: Row[];
+  sql?: string | null;
+  vizUrl?: string | null;
+  vizTitle?: string | null;
+}) {
+  const plan = useMemo(() => analyzeResult(columns, rows), [columns, rows]);
+  const hasChart = plan.kind === "chart";
+  const hasGenie = !!vizUrl;
+
+  const [view, setView] = useState<View>(hasChart ? "chart" : "table");
+  const [showSql, setShowSql] = useState(false);
+  const [imgOk, setImgOk] = useState(true);
+
+  if (plan.kind === "kpi") {
+    return (
+      <div className="space-y-2">
+        <Kpi column={plan.column} rows={rows} />
+        {hasGenie && imgOk && (
+          <img
+            src={vizUrl!}
+            alt={vizTitle ?? "Genie visualization"}
+            onError={() => setImgOk(false)}
+            className="w-full rounded-lg border border-border/60 bg-background/40"
+          />
+        )}
+        {sql && <SqlDisclosure sql={sql} open={showSql} onToggle={() => setShowSql((v) => !v)} />}
+      </div>
+    );
+  }
+
+  const options: View[] = [];
+  if (hasChart) options.push("chart");
+  if (rows.length > 0) options.push("table");
+  if (hasGenie) options.push("genie");
+
+  return (
+    <div className="space-y-2">
+      {options.length > 1 && (
+        <div className="flex items-center justify-end gap-1 rounded-lg border border-border/60 bg-background/40 p-0.5">
+          {hasChart && (
+            <ToggleBtn active={view === "chart"} onClick={() => setView("chart")} title="Chart">
+              <BarChart3 className="size-4" />
+            </ToggleBtn>
+          )}
+          <ToggleBtn active={view === "table"} onClick={() => setView("table")} title="Table">
+            <Table2 className="size-4" />
+          </ToggleBtn>
+          {hasGenie && (
+            <ToggleBtn active={view === "genie"} onClick={() => setView("genie")} title="Genie chart (Beta)">
+              <ImageIcon className="size-4" />
+            </ToggleBtn>
+          )}
+        </div>
+      )}
+
+      {view === "chart" && plan.kind === "chart" && (
+        <ChartRender plan={plan} rows={rows} />
+      )}
+
+      {view === "table" && (
+        <RowsTable columns={columns} rows={rows} maxHeight="260px" />
+      )}
+
+      {view === "genie" && hasGenie && (
+        imgOk ? (
+          <figure className="space-y-1">
+            <img
+              src={vizUrl!}
+              alt={vizTitle ?? "Genie visualization"}
+              onError={() => setImgOk(false)}
+              className="w-full rounded-lg border border-border/60 bg-background/40"
+            />
+            <figcaption className="text-[11px] text-muted-foreground">
+              {vizTitle ? `${vizTitle} · ` : ""}Chart generated by Genie (Beta)
+            </figcaption>
+          </figure>
+        ) : (
+          <div className="glass rounded-lg p-3 text-xs text-muted-foreground">
+            Genie visualization is unavailable for this result.
+          </div>
+        )
+      )}
+
+      {sql && <SqlDisclosure sql={sql} open={showSql} onToggle={() => setShowSql((v) => !v)} />}
+    </div>
+  );
+}
+
+function ChartRender({
+  plan,
+  rows,
+}: {
+  plan: Extract<ReturnType<typeof analyzeResult>, { kind: "chart" }>;
+  rows: Row[];
+}) {
+  const data = useMemo(() => toChartData(rows, plan.x, plan.series), [rows, plan]);
+  const bars = plan.series.map((k) => ({ key: k, name: titleCase(k) }));
+
+  if (plan.type === "line") return <LineChartView data={data} x={plan.x} lines={bars} />;
+  if (plan.type === "area")
+    return <AreaChartView data={data} x={plan.x} areaKey={plan.series[0]} />;
+  if (plan.type === "donut")
+    return <DonutChartView data={data} nameKey={plan.x} valueKey={plan.series[0]} />;
+  return <BarChartView data={data} x={plan.x} bars={bars} />;
+}
+
+function SqlDisclosure({
+  sql,
+  open,
+  onToggle,
+}: {
+  sql: string;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div>
+      <button
+        onClick={onToggle}
+        className="flex items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground"
+      >
+        <Database className="size-3.5" />
+        {open ? "Hide" : "Show"} generated SQL
+        <ChevronDown className={cn("size-3.5 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <pre className="mt-2 overflow-auto rounded-lg border border-border/60 bg-background/60 p-3 text-[11px] leading-relaxed text-muted-foreground">
+          {sql.trim()}
+        </pre>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,12 @@
+resources:
+  pipelines:
+    fhlb_data_pipeline:
+      name: fhlb-data-pipeline
+      catalog: fhlb
+      schema: des_moines
+      serverless: true
+      channel: CURRENT
+      continuous: false
+      libraries:
+        - glob:
+            include: ../src/transformations/**

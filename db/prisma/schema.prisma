@@ -1,0 +1,159 @@
+// Prisma schema for FHLB Executive Command Center app OLTP state (Lakebase Postgres).
+// Prisma manages migrations for the production branch (per project rules).
+// Feature branches get a Lakebase branch off production; migrations run in CI.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Free-text executive annotations pinned to any KPI/widget across cockpits.
+model Annotation {
+  id        String   @id @default(uuid())
+  persona   String
+  widgetKey String   @map("widget_key")
+  author    String
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([persona, widgetKey])
+  @@map("annotation")
+}
+
+/// CRO member watchlist: members flagged for credit/collateral monitoring.
+model WatchlistItem {
+  id            String   @id @default(uuid())
+  memberId      String   @map("member_id")
+  memberName    String   @map("member_name")
+  reason        String
+  severity      String   @default("medium")
+  addedBy       String   @map("added_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([memberId])
+  @@map("watchlist_item")
+}
+
+/// Acknowledgement of a live alert from any cockpit's alert feed.
+model AlertAck {
+  id           String   @id @default(uuid())
+  alertKey     String   @map("alert_key")
+  persona      String
+  acknowledgedBy String @map("acknowledged_by")
+  note         String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([alertKey])
+  @@map("alert_ack")
+}
+
+/// CIO examiner evidence pack assembled for an FHFA request.
+model ExamRequest {
+  id          String          @id @default(uuid())
+  title       String
+  examiner    String
+  dueDate     DateTime?       @map("due_date")
+  status      String          @default("open")
+  createdBy   String          @map("created_by")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  items       ExamPackItem[]
+
+  @@map("exam_request")
+}
+
+/// Individual evidence artifact inside an examiner pack.
+model ExamPackItem {
+  id            String      @id @default(uuid())
+  examRequestId String      @map("exam_request_id")
+  label         String
+  sourceType    String      @map("source_type")
+  sourceRef     String      @map("source_ref")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  examRequest   ExamRequest @relation(fields: [examRequestId], references: [id], onDelete: Cascade)
+
+  @@index([examRequestId])
+  @@map("exam_pack_item")
+}
+
+/// Audit log of every governed AI Gateway call the app makes.
+model AiNarrativeAudit {
+  id             String   @id @default(uuid())
+  persona        String
+  kind           String
+  endpoint       String
+  prompt         String
+  response       String
+  guardrailVerdict String @map("guardrail_verdict")
+  requestId      String?  @map("request_id")
+  latencyMs      Int?     @map("latency_ms")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([persona, createdAt])
+  @@map("ai_narrative_audit")
+}
+
+/// Latest cached AI Anomaly Radar scan per persona (Genie deep-research agent).
+/// One row per persona; refreshed at most once per day (or on demand) so the
+/// expensive agent run does not fire on every page load.
+model AnomalyScan {
+  persona        String   @id
+  scanDate       DateTime @map("scan_date") @db.Date
+  summary        String?
+  high           Int      @default(0)
+  medium         Int      @default(0)
+  low            Int      @default(0)
+  content        String   @default("")
+  blocks         Json?
+  sources        Json?
+  steps          Int?
+  engine         String   @default("genie_agent")
+  conversationId String?  @map("conversation_id")
+  generatedBy    String?  @map("generated_by")
+  generatedAt    DateTime @default(now()) @map("generated_at")
+
+  @@map("anomaly_scan")
+}
+
+/// Cached morning briefing per persona + engine (AI Gateway vs Genie agent).
+/// Both engines are generated on first load each day and cached so the
+/// expensive agent run does not fire on every page load.
+model BriefingCache {
+  persona     String
+  engine      String
+  scanDate    DateTime @map("scan_date") @db.Date
+  payload     Json
+  generatedAt DateTime @default(now()) @map("generated_at")
+
+  @@id([persona, engine])
+  @@map("briefing_cache")
+}
+
+/// Same-day cache of the full Member Early-Warning scoring pass (credit-risk PD
+/// model on Model Serving). One row (id=1); refreshed daily or on demand so the
+/// CRO board is instant and the endpoint is not hit on every page load.
+model EarlyWarningCache {
+  id           Int      @id @default(1)
+  scanDate     DateTime @map("scan_date") @db.Date
+  endpoint     String?
+  modelVersion String?  @map("model_version")
+  payload      Json?
+  generatedAt  DateTime @default(now()) @map("generated_at")
+
+  @@map("early_warning_cache")
+}
+
+/// Saved cockpit view (filters, layout) per user.
+model SavedView {
+  id        String   @id @default(uuid())
+  persona   String
+  name      String
+  owner     String
+  config    Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("saved_view")
+}

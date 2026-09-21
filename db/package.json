@@ -1,0 +1,14 @@
+{
+  "name": "fhlb-lakebase-db",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prisma-managed Lakebase Postgres schema for the FHLB Executive Command Center app",
+  "scripts": {
+    "migrate:make": "prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/init.sql",
+    "migrate:deploy": "node apply_migration.mjs",
+    "generate": "prisma generate"
+  },
+  "devDependencies": {
+    "prisma": "^6.1.0"
+  }
+}
