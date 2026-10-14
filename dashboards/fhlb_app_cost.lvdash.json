@@ -1,0 +1,544 @@
+{
+  "datasets": [
+    {
+      "name": "cost",
+      "displayName": "Scoped cost",
+      "queryLines": [
+        "WITH scoped AS (\n  SELECT\n    u.usage_date,\n    CASE\n      WHEN u.usage_metadata.app_name = 'fhlb-command-center' THEN 'App'\n      WHEN u.usage_metadata.endpoint_name = 'fhlb-member-credit-risk' THEN 'Model Serving (credit risk)'\n      WHEN u.usage_metadata.endpoint_name = 'fhlb-governed-llm' THEN 'AI Gateway (LLM)'\n      WHEN u.usage_metadata.dlt_pipeline_id = 'e69628a9-d647-4785-a93f-254f8512560d' THEN 'Lakeflow Pipeline'\n      WHEN u.usage_metadata.project_id = '71819b98-8936-4e36-9e5b-af9d6398dc18' THEN 'Lakebase'\n      WHEN u.usage_metadata.warehouse_id = '688f49c732cf9083' THEN 'SQL Warehouse'\n    END AS component,\n    u.billing_origin_product AS product,\n    u.sku_name,\n    u.usage_quantity AS dbus,\n    u.usage_quantity * CAST(lp.pricing.default AS DOUBLE) AS cost_usd\n  FROM system.billing.usage u\n  LEFT JOIN system.billing.list_prices lp\n    ON u.sku_name = lp.sku_name\n   AND u.usage_start_time >= lp.price_start_time\n   AND (lp.price_end_time IS NULL OR u.usage_start_time < lp.price_end_time)\n  WHERE u.workspace_id = '7474656503943141'\n    AND u.usage_date >= date_sub(current_date(), 90)\n    AND (\n      u.usage_metadata.app_name = 'fhlb-command-center'\n      OR u.usage_metadata.endpoint_name IN ('fhlb-governed-llm','fhlb-member-credit-risk')\n      OR u.usage_metadata.dlt_pipeline_id = 'e69628a9-d647-4785-a93f-254f8512560d'\n      OR u.usage_metadata.project_id = '71819b98-8936-4e36-9e5b-af9d6398dc18'\n      OR u.usage_metadata.warehouse_id = '688f49c732cf9083'\n    )\n)\nSELECT usage_date, component, product, sku_name,\n       SUM(cost_usd) AS cost_usd, SUM(dbus) AS dbus\nFROM scoped\nWHERE component IS NOT NULL\nGROUP BY usage_date, component, product, sku_name"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "overview",
+      "displayName": "App Cost",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## FHLB Command Center \u2014 Cost Tracker"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "subtitle",
+            "multilineTextboxSpec": {
+              "lines": [
+                "Estimated list-price cost for this app and its components (App, SQL Warehouse, Model Serving, AI Gateway, Lakebase, Lakeflow pipeline). Source: system.billing. Use the Filters page to change the date range."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "total-cost",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "cost",
+                  "fields": [
+                    {
+                      "name": "sum(cost_usd)",
+                      "expression": "SUM(`cost_usd`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(cost_usd)",
+                  "displayName": "Total est. cost (USD)"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Total est. cost (USD)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "components",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "cost",
+                  "fields": [
+                    {
+                      "name": "countdistinct(component)",
+                      "expression": "COUNT(DISTINCT `component`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "countdistinct(component)",
+                  "displayName": "Components tracked"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Components tracked"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "days",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "cost",
+                  "fields": [
+                    {
+                      "name": "countdistinct(usage_date)",
+                      "expression": "COUNT(DISTINCT `usage_date`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "countdistinct(usage_date)",
+                  "displayName": "Days in range"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Days in range"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "hdr-breakdown",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### Cost by component & daily trend"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "pie-component",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "cost",
+                  "fields": [
+                    {
+                      "name": "component",
+                      "expression": "`component`"
+                    },
+                    {
+                      "name": "sum(cost_usd)",
+                      "expression": "SUM(`cost_usd`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "sum(cost_usd)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Cost (USD)"
+                },
+                "color": {
+                  "fieldName": "component",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Component"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Cost share by component"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "line-trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "cost",
+                  "fields": [
+                    {
+                      "name": "daily(usage_date)",
+                      "expression": "DATE_TRUNC(\"DAY\", `usage_date`)"
+                    },
+                    {
+                      "name": "sum(cost_usd)",
+                      "expression": "SUM(`cost_usd`)"
+                    },
+                    {
+                      "name": "component",
+                      "expression": "`component`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "daily(usage_date)",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Date"
+                },
+                "y": {
+                  "fieldName": "sum(cost_usd)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Cost (USD)"
+                },
+                "color": {
+                  "fieldName": "component",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Component"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Daily cost by component"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 6,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "hdr-detail",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### By product & SKU"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "bar-product",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "cost",
+                  "fields": [
+                    {
+                      "name": "product",
+                      "expression": "`product`"
+                    },
+                    {
+                      "name": "sum(cost_usd)",
+                      "expression": "SUM(`cost_usd`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "product",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Billing product"
+                },
+                "y": {
+                  "fieldName": "sum(cost_usd)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Cost (USD)"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Cost by billing product"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 13,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "detail-table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "cost",
+                  "fields": [
+                    {
+                      "name": "component",
+                      "expression": "`component`"
+                    },
+                    {
+                      "name": "product",
+                      "expression": "`product`"
+                    },
+                    {
+                      "name": "sku_name",
+                      "expression": "`sku_name`"
+                    },
+                    {
+                      "name": "sum(cost_usd)",
+                      "expression": "SUM(`cost_usd`)"
+                    },
+                    {
+                      "name": "sum(dbus)",
+                      "expression": "SUM(`dbus`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "component",
+                    "displayName": "Component"
+                  },
+                  {
+                    "fieldName": "product",
+                    "displayName": "Billing product"
+                  },
+                  {
+                    "fieldName": "sku_name",
+                    "displayName": "SKU"
+                  },
+                  {
+                    "fieldName": "sum(cost_usd)",
+                    "displayName": "Cost (USD)"
+                  },
+                  {
+                    "fieldName": "sum(dbus)",
+                    "displayName": "Usage (DBUs/units)"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Cost by component, product & SKU"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 18,
+            "width": 6,
+            "height": 7
+          }
+        }
+      ]
+    },
+    {
+      "name": "filters",
+      "displayName": "Filters",
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layout": [
+        {
+          "widget": {
+            "name": "filter-date",
+            "queries": [
+              {
+                "name": "cost_date",
+                "query": {
+                  "datasetName": "cost",
+                  "fields": [
+                    {
+                      "name": "usage_date",
+                      "expression": "`usage_date`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "usage_date",
+                    "displayName": "Usage date",
+                    "queryName": "cost_date"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Date range"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-component",
+            "queries": [
+              {
+                "name": "cost_component",
+                "query": {
+                  "datasetName": "cost",
+                  "fields": [
+                    {
+                      "name": "component",
+                      "expression": "`component`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "component",
+                    "displayName": "Component",
+                    "queryName": "cost_component"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Component"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        }
+      ]
+    }
+  ]
+}
