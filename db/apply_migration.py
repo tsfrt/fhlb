@@ -1,13 +1,14 @@
 """Apply the Prisma-generated migration SQL to the Lakebase fhlb_app database."""
+import os
 import pathlib
 import uuid
 
 import psycopg
 from databricks.sdk import WorkspaceClient
 
-PROFILE = "fevm-serverless-stable-blj52t"
-INSTANCE = "fhlb-lakebase"
-APP_DB = "fhlb_app"
+PROFILE = os.environ.get("FHLB_PROFILE", "fevm-serverless-stable-blj52t")
+INSTANCE = os.environ.get("FHLB_LAKEBASE_INSTANCE", "fhlb-lakebase")
+APP_DB = os.environ.get("FHLB_LAKEBASE_DB", "fhlb_app")
 
 sql = pathlib.Path(__file__).parent.joinpath("prisma/migrations/init.sql").read_text()
 

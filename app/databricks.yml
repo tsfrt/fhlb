@@ -59,3 +59,9 @@ targets:
   dev:
     mode: development
     default: true
+
+  labstat:
+    workspace:
+      host: https://fevm-labstat.cloud.databricks.com
+    variables:
+      warehouse_id: "ec146ab4111419c9"

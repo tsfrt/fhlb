@@ -13,9 +13,10 @@ import subprocess
 import tempfile
 import uuid
 
-PROFILE = "fevm-serverless-stable-blj52t"
-WAREHOUSE_ID = "688f49c732cf9083"
+PROFILE = os.environ.get("FHLB_PROFILE", "fevm-serverless-stable-blj52t")
+WAREHOUSE_ID = os.environ.get("FHLB_WAREHOUSE_ID", "688f49c732cf9083")
 DBX = "/opt/homebrew/bin/databricks"
+HOST = os.environ.get("FHLB_HOST", "https://fevm-serverless-stable-blj52t.cloud.databricks.com")
 CAT = "fhlb.des_moines"
 
 
@@ -238,7 +239,7 @@ if __name__ == "__main__":
         r = create_space(sp)
         sid = r.get("space_id")
         if sid:
-            host = "https://fevm-serverless-stable-blj52t.cloud.databricks.com"
+            host = HOST
             print(f"  space_id={sid}")
             print(f"  URL: {host}/genie/rooms/{sid}")
         else:

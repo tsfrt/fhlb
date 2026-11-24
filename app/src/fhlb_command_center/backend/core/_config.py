@@ -35,11 +35,11 @@ class AppConfig(BaseSettings):
     schema_name: str = Field(default="des_moines")
 
     # --- Genie spaces (persona -> space id) ---
-    genie_cro: str = Field(default="01f19fca2c3f12fdb24b4c62cd498636")
-    genie_cfo: str = Field(default="01f19fca2c7b192593a458a089f2170a")
-    genie_cbo: str = Field(default="01f19fca2ca91bd18bdd24fa575ee36e")
-    genie_mission: str = Field(default="01f19fca2cd810c68e2c9008491dfd8d")
-    genie_cio: str = Field(default="01f19fca2d0618bfa933efd57156faed")
+    genie_cro: str = Field(default="01f1e82f58f31ef69360c5654f060e7a")
+    genie_cfo: str = Field(default="01f1e82f59381a0d83680aca7ee093cb")
+    genie_cbo: str = Field(default="01f1e82f598a1038bbd2776cb84eff6d")
+    genie_mission: str = Field(default="01f1e82f59c51a89b804c6a7770bf589")
+    genie_cio: str = Field(default="01f1e82f5a0716a29a2d96e88d9db4bf")
 
     # --- AI Gateway ---
     gateway_endpoint: str = Field(default="fhlb-governed-llm")

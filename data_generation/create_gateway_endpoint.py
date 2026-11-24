@@ -8,9 +8,9 @@ import json
 import os
 import subprocess
 
-PROFILE = "fevm-serverless-stable-blj52t"
+PROFILE = os.environ.get("FHLB_PROFILE", "fevm-serverless-stable-blj52t")
 DBX = "/opt/homebrew/bin/databricks"
-HOST = "https://fevm-serverless-stable-blj52t.cloud.databricks.com"
+HOST = os.environ.get("FHLB_HOST", "https://fevm-serverless-stable-blj52t.cloud.databricks.com")
 ENV = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/bin:/bin",
        "DATABRICKS_CLI_DO_NOT_EXECUTE_NEWER_VERSION": "1"}
 
