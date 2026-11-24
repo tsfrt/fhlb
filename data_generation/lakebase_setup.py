@@ -2,15 +2,16 @@
 Create the fhlb_app database inside the fhlb-lakebase instance and print a
 Prisma-ready DATABASE_URL (OAuth token as password, ~1h validity) for migration.
 """
+import os
 import sys
 import uuid
 
 import psycopg
 from databricks.sdk import WorkspaceClient
 
-PROFILE = "fevm-serverless-stable-blj52t"
-INSTANCE = "fhlb-lakebase"
-APP_DB = "fhlb_app"
+PROFILE = os.environ.get("FHLB_PROFILE", "fevm-serverless-stable-blj52t")
+INSTANCE = os.environ.get("FHLB_LAKEBASE_INSTANCE", "fhlb-lakebase")
+APP_DB = os.environ.get("FHLB_LAKEBASE_DB", "fhlb_app")
 
 w = WorkspaceClient(profile=PROFILE)
 inst = w.database.get_database_instance(name=INSTANCE)
